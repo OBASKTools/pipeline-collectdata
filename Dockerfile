@@ -51,13 +51,6 @@ apt-get -qq -y install git curl wget default-jdk pigz maven libpq-dev python-dev
 RUN mkdir $CONF_BASE
 RUN mkdir $WORKSPACE
 
-###### REMOTE CONFIG ######
-ARG CONF_BASE_TEMP=${CONF_BASE}/temp
-RUN mkdir $CONF_BASE_TEMP
-RUN cd "${CONF_BASE_TEMP}" && git clone --quiet ${CONF_REPO} && cd $(ls -d */|head -n 1) && git checkout ${CONF_BRANCH}
-# copy inner project folder from temp to conf base
-RUN cd "${CONF_BASE_TEMP}" && cd $(ls -d */|head -n 1) && cp -R . $CONF_BASE && cd $CONF_BASE && rm -r ${CONF_BASE_TEMP} && tree ${CONF_BASE}
-
 ###### ROBOT ######
 ENV ROBOT v1.7.0
 ENV ROBOT_ARGS -Xmx20G
