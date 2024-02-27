@@ -33,7 +33,10 @@ echo 'START' >> ${WORKSPACE}/tick.out
 echo "** Creating temporary directories.. **"
 cd ${WORKSPACE}
 ls -l $VFB_FINAL
-rm -rf $VFB_FINAL/*
+#rm -rf $VFB_FINAL/*
+find $VFB_FINAL -mindepth 1 -maxdepth 1 ! -name 'local_ontologies' -exec rm -rf {} +
+ls -l $VFB_FINAL
+find / -name "pbmc.owl"
 rm -rf $VFB_FULL_DIR $VFB_SLICES_DIR $VFB_DOWNLOAD_DIR $VFB_DEBUG_DIR $VFB_FINAL_DEBUG
 mkdir $VFB_FULL_DIR $VFB_SLICES_DIR $VFB_DOWNLOAD_DIR $VFB_DEBUG_DIR $VFB_FINAL_DEBUG
 
@@ -41,7 +44,28 @@ echo "VFBTIME:"
 date
 
 echo '** Downloading relevant ontologies.. **'
-wget -N -P $VFB_DOWNLOAD_DIR -i ${CONF_DIR}/vfb_fullontologies.txt
+pwd
+ls -l
+# Function to check if a path is a URL
+is_url() {
+    local url_regex='^(http|https|ftp)://'
+    [[ $1 =~ $url_regex ]]
+}
+
+# Read each line from the .txt file
+while IFS= read -r line || [[ -n "$line" ]]; do
+    if is_url "$line"; then
+        # If it's a URL, download the file using wget
+        echo "Downloading $line"
+        wget -N -P "$VFB_DOWNLOAD_DIR" "$line"
+    else
+        # If it's a local file path, move it to the download directory
+        echo "Moving $line to $VFB_DOWNLOAD_DIR"
+        mv "$line" "$VFB_DOWNLOAD_DIR"
+    fi
+done < "${CONF_DIR}/vfb_fullontologies.txt"
+
+echo '** Downloading relevant ontology slices.. **'
 wget -N -P $VFB_SLICES_DIR -i ${CONF_DIR}/vfb_slices.txt
 
 echo "Export KB to OWL: "$EXPORT_KB_TO_OWL
