@@ -52,16 +52,22 @@ is_url() {
     [[ $1 =~ $url_regex ]]
 }
 
-# Read each line from the .txt file
 while IFS= read -r line || [[ -n "$line" ]]; do
     if is_url "$line"; then
         # If it's a URL, download the file using wget
         echo "Downloading $line"
         wget -N -P "$VFB_DOWNLOAD_DIR" "$line"
     else
-        # If it's a local file path, move it to the download directory
-        echo "Moving $line to $VFB_DOWNLOAD_DIR"
-        mv "$line" "$VFB_DOWNLOAD_DIR"
+        # Check if it starts with "file://"
+        if [[ $line == file://* ]]; then
+            line="${line#file://}"
+            # If it's a local file path, move it to the download directory
+            echo "Moving $line to $VFB_DOWNLOAD_DIR"
+            mv "$line" "$VFB_DOWNLOAD_DIR"
+        else
+            echo "Warning: $line does not start with file://"
+            exit 1
+        fi
     fi
 done < "${CONF_DIR}/vfb_fullontologies.txt"
 
