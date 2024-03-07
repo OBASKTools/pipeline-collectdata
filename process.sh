@@ -33,10 +33,8 @@ echo 'START' >> ${WORKSPACE}/tick.out
 echo "** Creating temporary directories.. **"
 cd ${WORKSPACE}
 ls -l $VFB_FINAL
-#rm -rf $VFB_FINAL/*
 find $VFB_FINAL -mindepth 1 -maxdepth 1 ! -name 'local_ontologies' -exec rm -rf {} +
 ls -l $VFB_FINAL
-find / -name "pbmc.owl"
 rm -rf $VFB_FULL_DIR $VFB_SLICES_DIR $VFB_DOWNLOAD_DIR $VFB_DEBUG_DIR $VFB_FINAL_DEBUG
 mkdir $VFB_FULL_DIR $VFB_SLICES_DIR $VFB_DOWNLOAD_DIR $VFB_DEBUG_DIR $VFB_FINAL_DEBUG
 
