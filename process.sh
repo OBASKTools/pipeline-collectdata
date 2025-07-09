@@ -57,7 +57,12 @@ fi
 echo '** Downloading relevant ontologies.. **'
 # Temp fix
 while read -r url; do
-  repo=$(echo "$url" | awk -F/ '{print $(NF-3)"-"$(NF-2)}')
+  path_segments=$(echo "$url" | awk -F/ '{print NF}')
+  if [ "$path_segments" -ge 3 ]; then
+    repo=$(echo "$url" | awk -F/ '{print $(NF-3)"-"$(NF-2)}')
+  else
+    repo="default-prefix"
+  fi
   out="$VFB_DOWNLOAD_DIR/${repo}-$(basename "$url")"
   wget -N -O "$out" "$url"
 done < "${CONF_DIR}/vfb_fullontologies.txt"
