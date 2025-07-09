@@ -55,7 +55,18 @@ else
 fi
 
 echo '** Downloading relevant ontologies.. **'
-wget -N -P $VFB_DOWNLOAD_DIR -i ${CONF_DIR}/vfb_fullontologies.txt
+# Temp fix
+while read -r url; do
+  path_segments=$(echo "$url" | awk -F/ '{print NF}')
+  if [ "$path_segments" -ge 3 ]; then
+    repo=$(echo "$url" | awk -F/ '{print $(NF-3)"-"$(NF-2)}')
+  else
+    repo="default-prefix"
+  fi
+  out="$VFB_DOWNLOAD_DIR/${repo}-$(basename "$url")"
+  wget -N -O "$out" "$url"
+done < "${CONF_DIR}/vfb_fullontologies.txt"
+# wget -N -P $VFB_DOWNLOAD_DIR -i ${CONF_DIR}/vfb_fullontologies.txt
 
 echo '** Downloading relevant ontology slices.. **'
 wget -N -P $VFB_SLICES_DIR -i ${CONF_DIR}/vfb_slices.txt
