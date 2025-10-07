@@ -56,16 +56,31 @@ fi
 
 echo '** Downloading relevant ontologies.. **'
 # Temp fix
+# Robust downloader: filename = <8-char-hash>_<basename>
 while read -r url; do
-  path_segments=$(echo "$url" | awk -F/ '{print NF}')
-  if [ "$path_segments" -ge 3 ]; then
-    repo=$(echo "$url" | awk -F/ '{print $(NF-3)"-"$(NF-2)}')
+  # Trim & strip CRLF
+  url=$(echo "$url" | tr -d '\r' | xargs)
+
+  # Basename (e.g., cl.owl)
+  base=$(basename "$url")
+
+  # Short, deterministic hash from full URL
+  if command -v md5sum >/dev/null 2>&1; then
+    hash=$(echo -n "$url" | md5sum | cut -c1-8)
   else
-    repo="default-prefix"
+    hash=$(echo -n "$url" | sha256sum | cut -c1-8)
   fi
-  out="$VFB_DOWNLOAD_DIR/${repo}-$(basename "$url")"
-  wget -N -O "$out" "$url"
+
+  # Build: <hash>_<basename>
+  name="${hash}_${base}"
+  out="${VFB_DOWNLOAD_DIR}/${name}"
+
+  echo "Downloading $url → $out"
+  wget -q -N -O "$out" "$url"
+
+  echo -e "${url}\t${name}" >> "${VFB_DOWNLOAD_DIR}/download_manifest.tsv"
 done < "${CONF_DIR}/vfb_fullontologies.txt"
+
 # wget -N -P $VFB_DOWNLOAD_DIR -i ${CONF_DIR}/vfb_fullontologies.txt
 
 echo '** Downloading relevant ontology slices.. **'
